@@ -1,17 +1,18 @@
 <!doctype html>
+<!-- Created by Edutorium of Excellence LLC. © 2026 Edutorium of Excellence LLC. All rights reserved. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#05050f">
-<title>Taptinita</title>
+<title>Taptanita</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <!-- Text is filled in from i18n.js: data-t = text, data-t-label = aria-label -->
 <div id="app">
   <header class="bar top">
-    <h1 class="logo">TAPTINITA</h1>
+    <h1 class="logo">TAPTANITA</h1>
     <div class="bar-btns">
       <div class="seg lang" id="langSeg" role="group" data-t-label="lang">
         <button data-lang="en" class="on" aria-pressed="true">EN</button><button data-lang="es" aria-pressed="false">ES</button>
@@ -88,6 +89,10 @@
     <div class="ov-card">
       <h2 data-t="helpTitle"></h2>
       <ul id="helpList"></ul>
+      <details class="about">
+        <summary data-t="aboutTitle"></summary>
+        <div id="aboutText"></div>
+      </details>
       <button class="btn btn-green" data-close data-t="gotIt"></button>
     </div>
   </div>

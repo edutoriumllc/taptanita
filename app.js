@@ -1,8 +1,9 @@
-/* Taptinita — drag seeds into the pozos to build numbers in base 10 or any base 2–9.
-   Places are numbered 0 (lowest shown) to PLACES − 1. By default corn = ×1, peas = ×b,
-   beans = ×b², lupins = ×b³. In base 10 the learner can give any place any seed, and
+/* Taptanita — drag seeds into the pozos to build numbers in base 10 or any base 2–9.
+   Places are numbered 0 (lowest shown) to PLACES − 1. By default corn = ×1, beans = ×b,
+   peas = ×b², lupins = ×b³ (red-brown frejol = tens and green haba = hundreds in the SEIBE guide). In base 10 the learner can give any place any seed, and
    the lowest place can be tenths, hundredths or thousandths (S.low).
-   All on-screen text lives in i18n.js (English and Spanish). */
+   All on-screen text lives in i18n.js (English and Spanish).
+   Created by Edutorium of Excellence LLC. © 2026 Edutorium of Excellence LLC. All rights reserved. */
 (function () {
   'use strict';
 
@@ -11,8 +12,8 @@
   // How each seed looks; its name comes from i18n.js
   var SEEDS = [
     { cls: 'corn', w: 22, h: 25, dot: '#ffd21f', tc: 't-yellow' },
-    { cls: 'pea', w: 21, h: 21, dot: '#7dff4a', tc: 't-green' },
     { cls: 'bean', w: 29, h: 19, dot: '#d23a44', tc: 't-red' },
+    { cls: 'pea', w: 21, h: 21, dot: '#7dff4a', tc: 't-green' },
     // lupin (chocho in Ecuador): Andean lupini bean, creamy white to tan
     { cls: 'lupin', w: 23, h: 20, dot: '#f3e6c4', tc: 't-cream' }
   ];
@@ -20,7 +21,8 @@
 
   /* ---------- language ---------- */
   var TEXT = window.TAPTI_TEXT, LANG = 'en';
-  try { if (localStorage.getItem('taptinita-lang') === 'es') LANG = 'es'; } catch (e) { /* storage blocked */ }
+  // also reads 'taptinita-lang', the key used before the app was renamed Taptanita
+  try { if ((localStorage.getItem('taptanita-lang') || localStorage.getItem('taptinita-lang')) === 'es') LANG = 'es'; } catch (e) { /* storage blocked */ }
   function t(key, a) { var v = TEXT[LANG][key]; return typeof v === 'function' ? v(a || {}) : v; }
   // The seed used for place i: the learner's choice in base 10, the default order otherwise
   function seedIdx(i) { return S.base === 10 ? S.seedOf[i] : i; }
@@ -200,7 +202,7 @@
     return d;
   }
 
-  // ONE view: the selected place's seeds. ALL view: one Taptinita where each pozo
+  // ONE view: the selected place's seeds. ALL view: one Taptanita where each pozo
   // can hold one seed of every kind at the same time.
   var ALL_OFF3 = [[0, 8], [8, -6], [-8, -6]], ALL_OFF4 = [[-7, 7], [7, 7], [-7, -7], [7, -7]];
   var ALL_OFF = ALL_OFF3, ALL_SCALE = 0.7;
@@ -669,7 +671,7 @@
     reachedOn();
   }
 
-  // Take a board seed off the Taptinita; it flies back to its cup and fades
+  // Take a board seed off the Taptanita; it flies back to its cup and fades
   function removeSeed(d) {
     take(d.src);
     unitBeep(d.src.place, 'remove');
@@ -714,7 +716,7 @@
     var tg = hotTarget(x, y);
     var drop = tg && (tg.dataset.zone !== undefined ? 'board' : tg.dataset.drop);
 
-    // A seed dragged off the Taptinita (to a cup, a card or anywhere else) is removed
+    // A seed dragged off the Taptanita (to a cup, a card or anywhere else) is removed
     if (src.from === 'board' && drop !== 'board') return removeSeed(d);
 
     if (drop === 'card') {
@@ -734,7 +736,7 @@
       var onKilla = by > 108 && by < 160 && Math.abs(bx - 110) < 44;
       // a pea or bean already on the board, dropped on the Killa, breaks into the place below
       if (src.from === 'board' && onKilla && src.place > 0) return breakSeed(d, src);
-      // seeds on the Taptinita stay put; they leave only to a cup or the Killa
+      // seeds on the Taptanita stay put; they leave only to a cup or the Killa
       if (src.from === 'board') return goBack(d);
 
       if (full(i)) {
@@ -879,7 +881,7 @@
     } else if (S.mode === 'add') {
       var A, B, cap = Math.pow(b, PLACES) - 1;
       if (2 * max > cap) {
-        // numbers as big as the Taptinita: keep the sum inside it
+        // numbers as big as the Taptanita: keep the sum inside it
         var hi = cap - min >= min ? cap - min : cap - 1;
         A = rnd(min, hi);
         B = rnd(Math.min(min, cap - A), cap - A);
@@ -982,7 +984,7 @@
     toast(t('baseToast', { b: S.base, n: S.base - 1, s: sn(0), s2: sn(1) }));
   });
 
-  // Which places the Taptinita has (value "low:places"). Base 10, named by place-value words:
+  // Which places the Taptanita has (value "low:places"). Base 10, named by place-value words:
   // whole numbers by the biggest place, decimals by the smallest. HUNDREDS (hundreds, tens, ones),
   // THOUSANDS (thousands–ones), TENTHS (hundreds–tenths), HUNDREDTHS (tens–hundredths),
   // THOUSANDTHS (ones–thousandths). Other bases: up to ×b² or ×b³.
@@ -1010,6 +1012,7 @@
     var parts = [];
     for (var i = PLACES - 1; i >= 0; i--) parts.push('<b class="' + SEEDS[seedIdx(i)].tc + '">' + sn(i).many + '</b> ×' + plv(i));
     $('#helpList').innerHTML = t('helpHtml', { parts: parts.join(', ') });
+    $('#aboutText').innerHTML = t('aboutHtml');
   }
   placeSel.addEventListener('change', function () {
     var r = placeSel.value.split(':');
@@ -1069,7 +1072,7 @@
     var b = e.target.closest('button');
     if (!b || busy || drag || b.dataset.lang === LANG) return;
     LANG = b.dataset.lang;
-    try { localStorage.setItem('taptinita-lang', LANG); } catch (err) { /* storage blocked */ }
+    try { localStorage.setItem('taptanita-lang', LANG); } catch (err) { /* storage blocked */ }
     applyLanguage();
   });
 
