@@ -50,6 +50,7 @@
           '<li>In ADD, <b class="t-yellow">GUIDE</b> works like the SEIBE guide: the second number waits as seeds in the <b class="t-yellow">choza</b> (the head). Tap or drag its seeds onto the Taptanita one at a time.</li>' +
           '<li>ONE shows one kind of seed at a time (tap a place card to switch). ALL puts every kind of seed together on the Taptanita, one of each per pozo, so you see the whole number.</li>';
       },
+      feedback: 'SEND FEEDBACK', // opens the Google Form in a new tab
       aboutTitle: 'ABOUT',
       aboutHtml: '<p>Based on the Taptana Cañari (Cañari counter) and the Taptanita of Ecuador\'s Secretaría de Educación Intercultural Bilingüe y la Etnoeducación (SEIBE). This app is not made, endorsed or sponsored by SEIBE or the Government of Ecuador.</p>' +
         '<p class="ref">Vásquez, M., Duchi, J. &amp; Antun, R. (2025). <i>Taptanita</i>. Quito: SEIBE.<br>' +
@@ -163,6 +164,7 @@
           '<li>En SUMA, <b class="t-yellow">GUÍA</b> funciona como la guía de la SEIBE: el segundo número espera como semillas en la <b class="t-yellow">choza</b> (la cabeza). Toca o arrastra sus semillas a la Taptanita, una a una.</li>' +
           '<li>UNO muestra un tipo de semilla a la vez (toca una tarjeta de lugar para cambiar). TODO pone todas las semillas juntas en la Taptanita, una de cada tipo por pozo, para ver el número completo.</li>';
       },
+      feedback: 'ENVIAR COMENTARIOS',
       aboutTitle: 'ACERCA DE',
       aboutHtml: '<p>Basada en la Taptana Cañari (contador cañari) y en la Taptanita de la Secretaría de Educación Intercultural Bilingüe y la Etnoeducación (SEIBE) del Ecuador. Esta aplicación no fue creada, avalada ni patrocinada por la SEIBE ni por el Gobierno del Ecuador.</p>' +
         '<p class="ref">Vásquez, M., Duchi, J. y Antun, R. (2025). <i>Taptanita</i>. Quito: SEIBE.<br>' +

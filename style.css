@@ -251,6 +251,8 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .btn-blue { border-color: var(--blue-glow); color: var(--blue-glow); box-shadow: 0 0 10px rgba(90,120,255,.35); }
 .btn:active, .chip:active { transform: scale(.97); }
 .btn[hidden], .seg[hidden] { display: none; }
+/* the feedback link (Google Form) looks like a button */
+.link-btn { display: flex; align-items: center; justify-content: center; margin-bottom: 8px; text-decoration: none; }
 
 /* overlays */
 .ov { position: absolute; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,8,.82); }
