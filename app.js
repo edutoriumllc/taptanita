@@ -58,6 +58,7 @@
   var S = {
     base: 10, places: [], sel: 0, mode: 'free', digits: 2, task: null, taskDone: false,
     view: 'all', show: true, muted: true, way: 'take', saved: [], done: false,
+    guide: false, pile: null, // GUIDE (ADD only): the second number as seeds in the choza, per place
     low: 0, seedOf: [0, 1, 2, 3], // lowest place's power of 10; seed for each place (base 10)
     stats: { saved: 0, tasks: 0, correct: 0, trades: 0, breaks: 0, asked: 0, askRight: 0 }
   };
@@ -179,10 +180,11 @@
       var h = hubPos(n, pl.x);
       s += '<circle fill="' + dot + '" cx="' + h.x + '" cy="' + h.y + '" r="9"/>';
     }
+    // with GUIDE the choza holds the second number's seeds instead of the number
     if (i === 'all') {
-      s += '<text class="choza-dig all" x="110" y="62">' + (S.show ? fmt(value()) : '?') + '</text>';
+      if (!S.pile) s += '<text class="choza-dig all" x="110" y="62">' + (S.show ? fmt(value()) : '?') + '</text>';
     } else if (!mini) {
-      s += '<text class="choza-dig" x="110" y="62">' + (S.show ? cnt(i).toString(S.base) : '?') + '</text>';
+      if (!S.pile) s += '<text class="choza-dig" x="110" y="62">' + (S.show ? cnt(i).toString(S.base) : '?') + '</text>';
       s += '<text class="hub-lbl" x="110" y="' + G.hub.y + '" style="font-size:' + Math.min(14, G.hub.r * 0.6) + 'px">×' + plv(i) + '</text>';
     }
     return s + '</svg>';
@@ -237,9 +239,36 @@
         b.appendChild(d);
       });
     });
+    renderPile(b, shown);
     boardsEl.innerHTML = '';
     boardsEl.appendChild(b);
     if (!all) markNext(S.sel);
+  }
+
+  // GUIDE: the second number's seeds sit in the choza (the head) as a small pile,
+  // biggest place first, shrinking a little when there are many
+  function renderPile(b, shown) {
+    if (!S.pile) return;
+    var list = [];
+    shown.slice().sort(function (x, y) { return y - x; }).forEach(function (i) {
+      for (var n = 0; n < S.pile[i]; n++) list.push(i);
+    });
+    var m = list.length, cols = Math.ceil(Math.sqrt(m)), rows = Math.ceil(m / cols) || 1;
+    var gap = Math.min(20, 58 / Math.max(cols, rows)), scale = m > 9 ? 0.5 : 0.65;
+    list.forEach(function (i, n) {
+      var c = n % cols, r = Math.floor(n / cols);
+      var x = G.choza.x + (c - (cols - 1) / 2) * gap, y = G.choza.y + (r - (rows - 1) / 2) * gap;
+      var d = seedEl(i, x * sc, y * sc, rot(i, n), sc * scale, 'pile');
+      d.dataset.pile = i;
+      d.dataset.place = i;
+      b.appendChild(d);
+    });
+  }
+  // A number's seeds per place, for the pile
+  function seedsOf(v) {
+    var out = [];
+    for (var i = 0; i < PLACES; i++) out.push(Math.floor(v / pv(i)) % S.base);
+    return out;
   }
 
   // Glow the pozo where place i's next seed must go
@@ -297,19 +326,27 @@
     if (S.mode === 'make') {
       return setPrompt(S.base === 10 ? t('pMake10', { n: fmt(tk.target) }) : t('pMakeB', { n: tk.target, b: S.base }));
     }
+    if (S.mode === 'add') renderWay();
     if (S.mode === 'add') return setPrompt(t('boardShows') + ' <b>' + fmt(tk.a) + '</b>. ' + t('pAdd', { n: fmt(tk.b) }));
     // SUB shares the row with the −B / B+? switch, so it uses the short wording
     renderWay();
     setPrompt(t('boardShort') + ' <b>' + fmt(tk.on ? tk.b : tk.a) + '</b>. ' + (tk.on ? t('pOn', { n: fmt(tk.a) }) : t('pSub', { n: fmt(tk.b) })));
   }
-  // SUB can be done two ways: take B away from A, or start at B and count on to A
+  // SUB can be done two ways: take B away from A, or start at B and count on to A.
+  // GUIDE (ADD only) puts B in the choza
   function renderWay() {
-    var n = fmt(S.task.b);
+    var n = fmt(S.task.b), g = $('#btnGuide');
+    $('#waySeg').hidden = S.mode !== 'sub';
+    g.hidden = S.mode !== 'add';
+    g.classList.toggle('on', S.guide);
+    g.setAttribute('aria-pressed', String(S.guide));
+    g.innerHTML = '<span>' + t('guideName') + '</span><b>' + t(S.guide ? 'guideOn' : 'guideOff') + '</b>';
     document.querySelectorAll('#waySeg button').forEach(function (x) {
       var on = x.dataset.way === S.way;
       x.classList.toggle('on', on);
       x.setAttribute('aria-pressed', String(on));
-      x.textContent = x.dataset.way === 'take' ? '−' + n : n + '+?';
+      var take = x.dataset.way === 'take';
+      x.innerHTML = '<span>' + t(take ? 'wayTakeName' : 'wayOnName') + '</span><b>' + (take ? '−' + n : n + '+?') + '</b>';
       x.setAttribute('aria-label', t(x.dataset.way === 'take' ? 'wayTakeLabel' : 'wayOnLabel', { n: n }));
     });
   }
@@ -679,6 +716,23 @@
     fly(d.g, c.x, c.y, true, function () { render(); afterChange(d.src.place); });
   }
 
+  // GUIDE (ADD), as in the SEIBE guide: each seed taken from the choza is added to the pozos
+  function usePile(d, i) {
+    var s0 = addTo(i);
+    if (s0 === null) {
+      if (tradeBlock(i)) { toast(tradeBlock(i)); render(); return goBack(d); }
+      S.pile[i]--;
+      return toKilla(d, i);
+    }
+    S.pile[i]--;
+    S.places[i].p[s0] = false;
+    render();
+    S.places[i].p[s0] = true;
+    if (!pileLeft()) toast(t('pileEmpty'));
+    placed(d, i, s0);
+  }
+  function pileLeft() { return S.pile ? S.pile.reduce(function (a, n) { return a + n; }, 0) : 0; }
+
   // Two quick taps on the same seed remove it
   var lastTap = null;
   function isDoubleTap(src) {
@@ -695,6 +749,9 @@
     var d = endDrag();
     if (!d) return;
     var src = d.src, x = e.clientX, y = e.clientY;
+
+    // GUIDE: a seed from the choza, tapped or dragged anywhere, is used
+    if (src.from === 'pile') return usePile(d, src.type);
 
     // A tap on a cup picks that place and adds one seed
     if (!d.moved) {
@@ -761,6 +818,7 @@
     var s = e.target.closest('.seed');
     if (!s) return;
     var i = +s.dataset.place;
+    if (s.dataset.pile !== undefined) return startDrag(e, { from: 'pile', type: i, place: i }, s);
     startDrag(e, { from: 'board', type: i, place: i, slot: /^\d+$/.test(s.dataset.slot) ? +s.dataset.slot : s.dataset.slot }, s);
   });
   cups.addEventListener('pointerdown', function (e) {
@@ -873,14 +931,17 @@
   // keep = reuse the current subtraction (when switching between take away and count on)
   function newTask(keep) {
     var b = S.base, d = S.digits, max = Math.pow(b, d) - 1, min = d === 1 ? 1 : Math.pow(b, d - 1);
+    var old = S.task;
     S.taskDone = false;
+    S.pile = null;
     resetBoard();
     if (S.mode === 'make') {
       S.task = { target: rnd(min, max) };
       S.stats.tasks++;
     } else if (S.mode === 'add') {
       var A, B, cap = Math.pow(b, PLACES) - 1;
-      if (2 * max > cap) {
+      if (keep && old && old.b !== undefined && !old.on) { A = old.a; B = old.b; }
+      else if (2 * max > cap) {
         // numbers as big as the Taptanita: keep the sum inside it
         var hi = cap - min >= min ? cap - min : cap - 1;
         A = rnd(min, hi);
@@ -888,7 +949,8 @@
       } else { A = rnd(min, max); B = rnd(min, max); }
       S.task = { a: A, b: B, target: A + B };
       setValue(A);
-      S.stats.tasks++;
+      if (!keep) S.stats.tasks++;
+      if (S.guide) { S.pile = seedsOf(B); toast(t('tipGuideAdd', { b: fmt(B) })); }
     } else if (S.mode === 'sub') {
       var AB = keep && S.task && S.task.b ? [S.task.a, S.task.b] : subPair(b, d, min, max);
       if (!keep) S.stats.tasks++;
@@ -925,10 +987,49 @@
       if (!S.taskDone) { S.taskDone = true; S.stats.correct++; }
       beep(784, 0.2);
       setPrompt(t('yes', { t: fmt(tg), parts: breakdown(tg) }), 'good');
+    } else if (S.mode === 'sub') {
+      beep(200, 0.15);
+      setPrompt(t('notYet') + base, 'warn');
+      $('#coachText').innerHTML = subCoach().join('<br>');
+      $('#coachOv').hidden = false;
     } else {
       beep(200, 0.15);
       setPrompt(t(v < tg ? 'needMore' : 'tooMany') + base, 'warn');
     }
+  }
+
+  /* ---------- SUB help: progress so far and the next step ---------- */
+  // "5 corn (ones)": n seeds of place i, with the place name in base 10
+  function seedWords(i, n) {
+    return n + ' ' + sn(i)[n === 1 ? 'one' : 'many'] + (S.base === 10 ? ' (' + pn(i)[n === 1 ? 'one' : 'many'] + ')' : '');
+  }
+  function subCoach() {
+    var tk = S.task, v = value(), tg = tk.target;
+    if (!tk.on) {
+      if (v < tg) return [t('subTooFar', { x: fmt(tk.a - v), b: fmt(tk.b), d: fmt(tg - v) })];
+      return [t('subSoFar', { x: fmt(Math.max(tk.a - v, 0)), b: fmt(tk.b) }), nextStep(tg, false)];
+    }
+    if (v > tg) return [t('onPast', { a: fmt(tg), d: fmt(v - tg) })];
+    return [t('onSoFar', { x: fmt(Math.max(v - tk.b, 0)) }), nextStep(tg, true)];
+  }
+  // Works place by place from the lowest, like the guide: the first place whose seeds
+  // don't match the answer's digit says what to do next
+  function nextStep(tg, on) {
+    var b = S.base;
+    for (var i = 0; i < PLACES; i++) {
+      var want = Math.floor(tg / pv(i)) % b, have = cnt(i);
+      if (have === want) continue;
+      if (on) {
+        if (have < want) return t('stepAdd', { w: seedWords(i, want - have) });
+        return t('stepAddUp', { w: seedWords(i, b - have + want), s2: sn(i + 1) });
+      }
+      if (have > want) return t('stepTake', { w: seedWords(i, have - want) });
+      // not enough here: phase back the nearest bigger seed on the Taptanita
+      for (var j = i + 1; j < PLACES - 1 && !cnt(j); j++) { /* find it */ }
+      // h: the seeds already there, which can also be taken away first (both ways are fine)
+      return t('stepBack', { s0: sn(i), s2: sn(j), s: sn(j - 1), b: b, h: have ? seedWords(i, have) : '' });
+    }
+    return '';
   }
 
   /* ---------- controls ---------- */
@@ -938,7 +1039,7 @@
     markView('all'); // every mode starts with all seeds together; ONE is still a tap away
     document.querySelectorAll('#modeSeg button').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === m); });
     $('#digitSeg').hidden = m === 'free';
-    $('#waySeg').hidden = m !== 'sub';
+    $('#corner').hidden = m !== 'sub' && m !== 'add';
     $('#app').classList.toggle('sub', m === 'sub');
     $('#btnNext').hidden = m === 'free';
     $('#btnCheck').textContent = m === 'free' ? t('save') : t('check');
@@ -954,6 +1055,11 @@
     if (!b || b.dataset.way === S.way) return;
     S.way = b.dataset.way;
     newTask(true);
+  });
+  $('#btnGuide').addEventListener('click', function () {
+    if (busy || drag) return;
+    S.guide = !S.guide;
+    newTask(true); // same problem, now with (or without) the second number in the choza
   });
   $('#digitSeg').addEventListener('click', function (e) {
     var b = e.target.closest('button');

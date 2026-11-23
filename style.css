@@ -69,11 +69,23 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .row.task { height: 46px; }
 #prompt { flex: 1; min-width: 0; margin: 0; font-size: 13px; line-height: 1.3; color: var(--text); }
 #prompt b { color: var(--yellow); text-shadow: 0 0 6px rgba(255,244,107,.6); font-size: 17px; }
-#app.sub #prompt { font-size: 12px; line-height: 1.25; }
-#app.sub #prompt b { font-size: 15px; }
-#app.sub.four #prompt { font-size: 11px; }
-#app.sub.four #prompt b { font-size: 13px; }
-#waySeg button { padding: 5px 6px; text-transform: none; }
+/* SUB: the two ways to subtract sit in the empty corner beside the Taptanita's head */
+.way { position: absolute; left: 8px; top: 8px; z-index: 6; display: flex; flex-direction: column; gap: 5px; width: 66px; }
+.way[hidden], .way [hidden] { display: none; }
+.way-set { display: flex; flex-direction: column; gap: 5px; }
+.way .guide { border-color: var(--yellow-edge, rgba(255,244,107,.5)); }
+.way .guide.on { border-color: var(--yellow); background: rgba(255,244,107,.14); color: var(--yellow); text-shadow: 0 0 6px rgba(255,244,107,.7); box-shadow: 0 0 8px rgba(255,244,107,.4); }
+/* GUIDE: the second number waiting in the choza */
+.seed.pile { cursor: pointer; }
+.way-h { font-size: 8px; letter-spacing: 1px; line-height: 1.2; text-align: center; color: var(--yellow); }
+.way button {
+  display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 2px;
+  border: 1px solid var(--green-edge); border-radius: 8px; background: var(--panel);
+  color: var(--muted); font-family: inherit; text-transform: none; cursor: pointer;
+}
+.way button span { font-size: 8.5px; letter-spacing: .5px; }
+.way button b { font-size: 14px; }
+.way button.on { border-color: var(--green); background: rgba(57,255,20,.16); color: var(--green); text-shadow: 0 0 6px var(--green); box-shadow: 0 0 8px rgba(57,255,20,.4); }
 #prompt.good { color: var(--green); }
 #prompt.warn { color: #ffb3b8; }
 

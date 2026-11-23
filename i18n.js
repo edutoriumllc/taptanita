@@ -46,7 +46,8 @@
           '<li>Drag seeds from a cup into the <b class="t-blue">blue pozos</b>, clockwise from the top right. The glowing circle is next.</li>' +
           '<li>To take a seed away, double-tap it or drag it off the Taptanita.</li>' +
           '<li>All pozos full? Add one more seed (tap the cup or drop it on the Taptanita) and it goes to the <b class="t-red">red Killa</b> by itself and completes the phase. Answer the question to make the phase change: together they construct one seed of the next phase.</li>' +
-          '<li>Taking away and not enough corn? Drag a bean from the Taptanita onto the <b class="t-red">red Killa</b> to go back a phase: it deconstructs into 10 corn (a pea deconstructs into 10 beans). Or tap <b class="t-yellow">+?</b> to count on instead.</li>' +
+          '<li>Taking away and not enough corn? Drag a bean from the Taptanita onto the <b class="t-red">red Killa</b> to go back a phase: it deconstructs into 10 corn (a pea deconstructs into 10 beans). Or tap <b class="t-yellow">+?</b> to count on instead. Stuck? Tap CHECK to see how much you have taken away and the next step.</li>' +
+          '<li>In ADD, <b class="t-yellow">GUIDE</b> works like the SEIBE guide: the second number waits as seeds in the <b class="t-yellow">choza</b> (the head). Tap or drag its seeds onto the Taptanita one at a time.</li>' +
           '<li>ONE shows one kind of seed at a time (tap a place card to switch). ALL puts every kind of seed together on the Taptanita, one of each per pozo, so you see the whole number.</li>';
       },
       aboutTitle: 'ABOUT',
@@ -64,7 +65,11 @@
       pAdd: function (a) { return 'Add <b>' + a.n + '</b>.'; },
       pSub: function (a) { return 'Take away <b>' + a.n + '</b>.'; },
       pOn: function (a) { return 'Count on to <b>' + a.n + '</b>.'; },
-      wayLabel: 'How to subtract',
+      wayLabel: 'How to subtract', wayHead: 'SUBTRACT BY', wayTakeName: 'TAKE AWAY', wayOnName: 'COUNT ON',
+      // GUIDE (ADD): the second number waits in the choza, as in the SEIBE guide
+      guideLabel: 'Guide method: put the second number in the choza', guideName: 'GUIDE', guideOn: 'ON', guideOff: 'OFF',
+      tipGuideAdd: function (a) { return a.b + ' waits in the choza. Tap or drag its seeds onto the Taptanita, one at a time.'; },
+      pileEmpty: 'The choza is empty. Tap CHECK.',
       wayTakeLabel: function (a) { return 'Take away ' + a.n; },
       wayOnLabel: function (a) { return 'Count on from ' + a.n; },
       tipOn: function (a) { return 'Start at ' + a.b + '. Add seeds until the Taptanita shows ' + a.a + '.'; },
@@ -74,6 +79,20 @@
       yesOn: function (a) { return 'Yes! ' + a.a + ' − ' + a.b + ' = ' + a.d + ', because ' + a.b + ' + ' + a.d + ' = ' + a.a + '.'; },
       yes: function (a) { return 'Yes! ' + a.t + ' = ' + a.parts + '. Tap NEXT.'; },
       needMore: 'Need more seeds. ', tooMany: 'Too many seeds. ',
+      // SUB: CHECK opens a card with the progress so far and the next step (w = "5 corn (ones)")
+      coachTitle: 'NEXT STEP',
+      subSoFar: function (a) { return 'Taken away so far: <b>' + a.x + '</b> of <b>' + a.b + '</b>.'; },
+      subTooFar: function (a) { return 'You took away <b>' + a.x + '</b>, but you only need to take away <b>' + a.b + '</b>. Put <b>' + a.d + '</b> back with seeds from the cups.'; },
+      stepTake: function (a) { return 'Next: take away <b>' + a.w + '</b>.'; },
+      stepBack: function (a) {
+        return 'There aren\'t enough ' + a.s0.many + ' to take away. Phase back: drag 1 ' + a.s2.one + ' onto the red Killa. It deconstructs into ' + a.b + ' ' + a.s.many + '.' +
+          (a.h ? ' Or take away the ' + a.h + ' first, then phase back.' : '');
+      },
+      onSoFar: function (a) { return 'Counted on so far: <b>' + a.x + '</b>.'; },
+      onPast: function (a) { return 'You counted on past <b>' + a.a + '</b>. Take away <b>' + a.d + '</b>.'; },
+      stepAdd: function (a) { return 'Next: add <b>' + a.w + '</b>.'; },
+      stepAddUp: function (a) { return 'Next: add <b>' + a.w + '</b>. On the way the Killa fills, and the phase change constructs 1 ' + a.s2.one + '.'; },
+      notYet: 'Not yet. ',
       putSeeds: 'Put some seeds on first.',
       saved: function (a) { return 'Saved ' + a.n + '! Keep building or CLEAR for a new one.'; },
 
@@ -140,7 +159,8 @@
           '<li>Arrastra semillas de un vaso a los <b class="t-blue">pozos azules</b>, en el sentido del reloj desde arriba a la derecha. El círculo que brilla es el siguiente.</li>' +
           '<li>Para quitar una semilla, tócala dos veces o arrástrala fuera de la Taptanita.</li>' +
           '<li>¿Pozos llenos? Añade una semilla más (toca el vaso o suéltala en la Taptanita) y va sola a la <b class="t-red">Killa roja</b>: se completa la fase. Responde la pregunta para hacer el cambio de fase a una semilla de la fase siguiente.</li>' +
-          '<li>¿Restando y no alcanza el maíz? Arrastra un fréjol de la Taptanita a la <b class="t-red">Killa roja</b> para regresar de fase: se cambia por 10 granos de maíz (una arveja se cambia por 10 fréjoles). O toca <b class="t-yellow">+?</b> para contar hacia adelante.</li>' +
+          '<li>¿Restando y no alcanza el maíz? Arrastra un fréjol de la Taptanita a la <b class="t-red">Killa roja</b> para regresar de fase: se cambia por 10 granos de maíz (una arveja se cambia por 10 fréjoles). O toca <b class="t-yellow">+?</b> para contar hacia adelante. ¿No sabes qué hacer? Toca REVISAR para ver cuánto quitaste y el siguiente paso.</li>' +
+          '<li>En SUMA, <b class="t-yellow">GUÍA</b> funciona como la guía de la SEIBE: el segundo número espera como semillas en la <b class="t-yellow">choza</b> (la cabeza). Toca o arrastra sus semillas a la Taptanita, una a una.</li>' +
           '<li>UNO muestra un tipo de semilla a la vez (toca una tarjeta de lugar para cambiar). TODO pone todas las semillas juntas en la Taptanita, una de cada tipo por pozo, para ver el número completo.</li>';
       },
       aboutTitle: 'ACERCA DE',
@@ -158,7 +178,10 @@
       pAdd: function (a) { return 'Suma <b>' + a.n + '</b>.'; },
       pSub: function (a) { return 'Quita <b>' + a.n + '</b>.'; },
       pOn: function (a) { return 'Cuenta hasta <b>' + a.n + '</b>.'; },
-      wayLabel: 'Cómo restar',
+      wayLabel: 'Cómo restar', wayHead: 'RESTAR', wayTakeName: 'QUITAR', wayOnName: 'CONTAR',
+      guideLabel: 'Método de la guía: el segundo número en la choza', guideName: 'GUÍA', guideOn: 'SÍ', guideOff: 'NO',
+      tipGuideAdd: function (a) { return a.b + ' espera en la choza. Toca o arrastra sus semillas a la Taptanita, una a una.'; },
+      pileEmpty: 'La choza está vacía. Toca REVISAR.',
       wayTakeLabel: function (a) { return 'Quitar ' + a.n; },
       wayOnLabel: function (a) { return 'Contar desde ' + a.n + ' hacia adelante'; },
       tipOn: function (a) { return 'Empieza en ' + a.b + '. Añade semillas hasta que la Taptanita muestre ' + a.a + '.'; },
@@ -168,6 +191,19 @@
       yesOn: function (a) { return '¡Sí! ' + a.a + ' − ' + a.b + ' = ' + a.d + ', porque ' + a.b + ' + ' + a.d + ' = ' + a.a + '.'; },
       yes: function (a) { return '¡Sí! ' + a.t + ' = ' + a.parts + '. Pulsa OTRO.'; },
       needMore: 'Faltan semillas. ', tooMany: 'Sobran semillas. ',
+      coachTitle: 'SIGUIENTE PASO',
+      subSoFar: function (a) { return 'Hasta ahora quitaste <b>' + a.x + '</b> de <b>' + a.b + '</b>.'; },
+      subTooFar: function (a) { return 'Quitaste <b>' + a.x + '</b>, pero solo hay que quitar <b>' + a.b + '</b>. Devuelve <b>' + a.d + '</b> con semillas de los vasos.'; },
+      stepTake: function (a) { return 'Ahora: quita <b>' + a.w + '</b>.'; },
+      stepBack: function (a) {
+        return 'No hay suficientes ' + a.s0.many + ' para quitar. Regreso de fase: arrastra ' + un(a.s2) + ' ' + a.s2.one + ' a la Killa roja. Se cambia por ' + a.b + ' ' + a.s.many + '.' +
+          (a.h ? ' O quita primero ' + los(a.s0) + ' ' + a.h + ' y luego haz el regreso de fase.' : '');
+      },
+      onSoFar: function (a) { return 'Hasta ahora añadiste <b>' + a.x + '</b>.'; },
+      onPast: function (a) { return 'Te pasaste de <b>' + a.a + '</b>. Quita <b>' + a.d + '</b>.'; },
+      stepAdd: function (a) { return 'Ahora: añade <b>' + a.w + '</b>.'; },
+      stepAddUp: function (a) { return 'Ahora: añade <b>' + a.w + '</b>. En el camino se llena la Killa y el cambio de fase forma ' + un(a.s2) + ' ' + a.s2.one + '.'; },
+      notYet: 'Todavía no. ',
       putSeeds: 'Primero pon algunas semillas.',
       saved: function (a) { return '¡' + a.n + ' guardado! Sigue formando o pulsa BORRAR para uno nuevo.'; },
 
